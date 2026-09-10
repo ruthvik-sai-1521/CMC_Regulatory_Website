@@ -402,14 +402,27 @@ step needed to see real content at `/resources`.
 > now make the app **refuse to boot** once `ENV=production` is set (step 4),
 > rather than silently losing data again.
 
+> **Required deployment topology:** This is a monorepo and must run as **two
+> Railway services**. Do not deploy the repository root as the only service.
+> The root Dockerfile serves only the frontend; it does not contain or run the
+> FastAPI backend, so `/api/auth/*`, `/api/resources`, and `/api/pipeline/*`
+> cannot work from a root-only deployment. Create a `backend` service rooted
+> at `/backend` and a `frontend` service rooted at `/frontend`, then connect
+> Postgres to the backend service.
+
 1. Push this repo to GitHub.
 2. In Railway: **New Project → Deploy from GitHub repo**.
-3. Add a **Postgres** plugin to the project — Railway injects `DATABASE_URL` automatically.
-4. Create **two services** from the same repo, each with its root directory set:
-   - `backend` service → root directory `/backend`, Railway auto-detects the Dockerfile. Set env vars from `backend/.env.example` (generate a real `JWT_SECRET_KEY`; set `ENV=production`, `DEBUG=false`, `CORS_ORIGINS` to your frontend's Railway URL).
-  - `frontend` service → root directory `/frontend`. Set **build** variable `VITE_API_BASE_URL` to the backend service's public Rauzr Technologies URL — this must be a *build*-time variable since Vite inlines it.
-5. Deploy both. Update `CORS_ORIGINS` on the backend once you know the frontend's final URL, and redeploy the backend.
-6. (Optional) Run `railway run python -m scripts.create_admin you@company.com "Your Name" "StrongPassword123"` against the backend service to create an admin who can view all demo bookings at `GET /api/demo-bookings`.
+3. Create/confirm the **backend** service from this repo with root directory `/backend`. Its Dockerfile and `backend/railway.json` provide the FastAPI service and `/api/health` health check.
+4. Create/confirm the **frontend** service from this repo with root directory `/frontend`. Its Dockerfile serves the Vite build on Railway's `$PORT`.
+5. Add a **Postgres** plugin and confirm it is linked to the **backend** service. Railway injects `DATABASE_URL` automatically; do not replace it with SQLite.
+6. Set backend variables: `ENV=production`, `DEBUG=false`, `JWT_SECRET_KEY` generated with `python -c "import secrets; print(secrets.token_urlsafe(48))"`, `CORS_ORIGINS=https://<frontend-public-domain>`, and `FRONTEND_URL=https://<frontend-public-domain>`.
+7. Set the frontend variable `VITE_API_BASE_URL=https://<backend-public-domain>`. It must be available during the frontend Docker build; the image also writes it to `runtime-config.js` when it starts.
+8. Deploy both services and verify in order:
+  - `curl https://<backend-public-domain>/api/health` returns JSON with status `ok`.
+  - `curl -I https://<backend-public-domain>/api/docs` returns the backend response, not the frontend SPA HTML.
+  - Browser DevTools Network shows signup requests going to `https://<backend-public-domain>/api/auth/register`, not the frontend origin.
+  - Any CORS error means the frontend URL in `CORS_ORIGINS`/`FRONTEND_URL` does not exactly match the deployed scheme and host.
+9. (Optional) Run `railway run python -m scripts.create_admin you@company.com "Your Name" "StrongPassword123"` against the backend service to create an admin who can view all demo bookings at `GET /api/demo-bookings`.
 
 #### Railway service-root requirement
 
