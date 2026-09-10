@@ -15,6 +15,8 @@ FROM node:20-slim
 WORKDIR /app
 RUN npm install -g serve@14
 COPY --from=build /app/dist ./dist
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV PORT=4173
 EXPOSE 4173
 CMD ["sh", "-c", "printf 'window.__RAUZR_API_BASE_URL__=%s;' \"$(node -e 'process.stdout.write(JSON.stringify(process.env.VITE_API_BASE_URL || \"\"))')\" > dist/runtime-config.js && serve -s dist -l ${PORT}"]

@@ -5,8 +5,8 @@ const TOKEN_KEY = "rauzr_token";
 // production the frontend and backend are separate Railway services, so
 // this is set at build time to the backend's public URL, e.g.
 // Set VITE_API_BASE_URL to the deployed Rauzr Technologies API URL.
-const API_BASE =
-  window.__RAUZR_API_BASE_URL__ ?? import.meta.env.VITE_API_BASE_URL ?? "";
+const runtimeApiBase = window.__RAUZR_API_BASE_URL__?.trim();
+const API_BASE = runtimeApiBase || import.meta.env.VITE_API_BASE_URL || "";
 
 const isProductionBuild = import.meta.env.MODE === "production";
 

@@ -14,6 +14,8 @@ FROM node:20-slim
 WORKDIR /app
 RUN npm install --global serve@14
 COPY --from=build /app/frontend/dist ./dist
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 ENV PORT=4173
 EXPOSE 4173
