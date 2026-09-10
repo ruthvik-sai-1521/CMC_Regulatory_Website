@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      # Legacy storage identifiers are intentionally retained so a brand
+      # rename does not create a fresh empty database for existing users.
+      POSTGRES_USER: veritant
+      POSTGRES_PASSWORD: veritant
+      POSTGRES_DB: veritant
+    # PostgreSQL is only consumed by the backend over the Compose network.
+    # Keeping it off the host avoids collisions with an existing local DB.
+    volumes:
+      - veritant_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U veritant"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ENV: development
+      DEBUG: "true"
+      # Postgres + the `veritant_pg_data` named volume below is what makes
+      # local users survive `docker compose restart` / `down` + `up`. This is the fix for the login-persistence bug applied
+      # to local dev -- see README for the production-equivalent fix.
+      DATABASE_URL: postgresql://veritant:veritant@db:5432/veritant
+      JWT_SECRET_KEY: local-dev-secret-change-me
+      CORS_ORIGINS: http://localhost:5173,http://localhost:4173
+      PORT: 8000
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Browser runs on the host machine, so it must call the backend's
+        # host-published port directly -- container-to-container DNS names
+        # like "backend" aren't reachable from the browser.
+        VITE_API_BASE_URL: "http://localhost:8000"
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      PORT: 4173
+    ports:
+      - "4173:4173"
+
+volumes:
+  veritant_pg_data:

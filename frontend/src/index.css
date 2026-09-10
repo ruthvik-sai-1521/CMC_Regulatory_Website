@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+
+  /* Visible keyboard focus everywhere -- never suppressed. */
+  :focus-visible {
+    outline: 2px solid #2e8c7d;
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    /* The marquee should stop moving entirely, not flash through one
+       0.01ms cycle -- freeze it at its resting position. */
+    .animate-marquee {
+      animation: none !important;
+      transform: none !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-6;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-sm bg-teal px-5 py-3 text-sm font-medium text-paper transition-colors hover:bg-teal-dark;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-sm border border-line px-5 py-3 text-sm font-medium text-ink transition-colors hover:border-teal hover:text-teal-dark;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-ink;
+  }
+
+  .field-input {
+    @apply w-full rounded-sm border border-line bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-slate/60 focus:border-teal focus:outline-none;
+  }
+}

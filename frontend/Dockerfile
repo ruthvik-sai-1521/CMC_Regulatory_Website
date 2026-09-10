@@ -1,0 +1,20 @@
+# --- build stage ---
+FROM node:20-slim AS build
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm install
+COPY . .
+# VITE_API_BASE_URL must be provided as a Railway "Build" variable (not
+# just a runtime variable) since Vite inlines it at build time.
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+RUN npm run build
+
+# --- serve stage ---
+FROM node:20-slim
+WORKDIR /app
+RUN npm install -g serve@14
+COPY --from=build /app/dist ./dist
+ENV PORT=4173
+EXPOSE 4173
+CMD ["sh", "-c", "serve -s dist -l ${PORT}"]

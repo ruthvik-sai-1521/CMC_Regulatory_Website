@@ -1,0 +1,44 @@
+# Illustrative GxP-style rule set for the pipeline demo.
+# Each rule is checked against the structured fields extracted from the
+# uploaded dossier + QA package. This is a simplified, non-exhaustive
+# stand-in for a real CMC/GxP rule engine -- see README "Limitations".
+rules:
+  - id: R-001
+    description: "Batch yield must fall within the validated range (85-102%)."
+    field: yield_percent
+    check: range
+    min: 85
+    max: 102
+    severity: critical
+
+  - id: R-002
+    description: "Nitrosamine impurity level must not exceed the acceptable intake limit (ppm)."
+    field: nitrosamine_ppm
+    check: max
+    max: 1.5
+    severity: critical
+
+  - id: R-003
+    description: "Certificate of Analysis (CoA) must be present in the extracted dossier."
+    field: coa_present
+    check: boolean_true
+    severity: major
+
+  - id: R-004
+    description: "All listed key starting materials (KSMs) must have a matching CoA reference."
+    field: ksm_coa_match
+    check: boolean_true
+    severity: major
+
+  - id: R-005
+    description: "No open, unresolved deviations may be linked to the reviewed batch."
+    field: open_deviations
+    check: max
+    max: 0
+    severity: critical
+
+  - id: R-006
+    description: "Nomenclature (INN / IUPAC name) must be present and non-empty."
+    field: nomenclature_present
+    check: boolean_true
+    severity: minor
