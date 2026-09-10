@@ -8,6 +8,7 @@ COPY . .
 # just a runtime variable) since Vite inlines it at build time.
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+RUN test -n "$VITE_API_BASE_URL" || (echo "ERROR: VITE_API_BASE_URL is required for the Railway frontend service" && exit 1)
 RUN npm run build
 
 # --- serve stage ---

@@ -417,7 +417,7 @@ step needed to see real content at `/resources`.
 4. Create/confirm the **frontend** service from this repo with root directory `/frontend`. Its Dockerfile serves the Vite build on Railway's `$PORT`.
 5. Add a **Postgres** plugin and confirm it is linked to the **backend** service. Railway injects `DATABASE_URL` automatically; do not replace it with SQLite.
 6. Set backend variables: `ENV=production`, `DEBUG=false`, `JWT_SECRET_KEY` generated with `python -c "import secrets; print(secrets.token_urlsafe(48))"`, `CORS_ORIGINS=https://<frontend-public-domain>`, and `FRONTEND_URL=https://<frontend-public-domain>`.
-7. Set the frontend variable `VITE_API_BASE_URL=https://<backend-public-domain>`. It must be available during the frontend Docker build; the image also writes it to `runtime-config.js` when it starts.
+7. Set the frontend variable `VITE_API_BASE_URL=https://<backend-public-domain>` on the **frontend service's Variables tab and the deployed environment**. It must be available during the frontend Docker build; the image also writes it to `runtime-config.js` when it starts. The frontend Docker build now fails explicitly if this variable is missing, instead of deploying a broken site.
 8. Deploy both services and verify in order:
   - `curl https://<backend-public-domain>/api/health` returns JSON with status `ok`.
   - `curl -I https://<backend-public-domain>/api/docs` returns the backend response, not frontend SPA HTML.

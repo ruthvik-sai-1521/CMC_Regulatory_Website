@@ -8,6 +8,7 @@ COPY frontend ./frontend
 # VITE_API_BASE_URL must be configured as a Railway build variable.
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+RUN test -n "$VITE_API_BASE_URL" || (echo "ERROR: VITE_API_BASE_URL is required for the Railway frontend service" && exit 1)
 RUN cd frontend && npm run build
 
 FROM node:20-slim
