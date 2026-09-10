@@ -411,6 +411,21 @@ step needed to see real content at `/resources`.
 5. Deploy both. Update `CORS_ORIGINS` on the backend once you know the frontend's final URL, and redeploy the backend.
 6. (Optional) Run `railway run python -m scripts.create_admin you@company.com "Your Name" "StrongPassword123"` against the backend service to create an admin who can view all demo bookings at `GET /api/demo-bookings`.
 
+#### Railway service-root requirement
+
+This repository is a monorepo. For the full application, configure Railway
+with two services as described above:
+
+- Backend service root directory: `/backend` and Dockerfile: `Dockerfile`.
+- Frontend service root directory: `/frontend` and Dockerfile: `Dockerfile`.
+- Frontend build variable: `VITE_API_BASE_URL=https://<backend-public-domain>`.
+
+If a single frontend service is created from the repository root, the root
+`Dockerfile` and `railway.json` provide an explicit static frontend build so
+Railway uses Docker instead of failing Railpack autodetection. That mode does
+not run the FastAPI backend; use the two-service configuration for login,
+resources, demo bookings, and pipeline execution.
+
 ### Migrating to another cloud
 Nothing here is Railway-specific except the two `railway.json` files (safe
 to delete elsewhere) and the reliance on Railway's auto-injected
