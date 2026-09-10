@@ -35,6 +35,7 @@ services:
       DATABASE_URL: postgresql://veritant:veritant@db:5432/veritant
       JWT_SECRET_KEY: local-dev-secret-change-me
       CORS_ORIGINS: http://localhost:5173,http://localhost:4173
+      FRONTEND_URL: http://localhost:5173
       PORT: 8000
     ports:
       - "8000:8000"

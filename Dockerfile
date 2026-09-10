@@ -17,4 +17,4 @@ COPY --from=build /app/frontend/dist ./dist
 
 ENV PORT=4173
 EXPOSE 4173
-CMD ["sh", "-c", "serve -s dist -l ${PORT}"]
+CMD ["sh", "-c", "printf 'window.__RAUZR_API_BASE_URL__=%s;' \"$(node -e 'process.stdout.write(JSON.stringify(process.env.VITE_API_BASE_URL || \"\"))')\" > dist/runtime-config.js && serve -s dist -l ${PORT}"]

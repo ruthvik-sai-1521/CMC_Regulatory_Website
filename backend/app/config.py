@@ -65,6 +65,9 @@ class Settings(BaseSettings):
     # Comma separated list of allowed origins, e.g.
     # "https://your-rauzr-frontend.example,https://rauzr.example"
     CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
+    # Set this to the public frontend URL on Railway. Keeping it separate
+    # makes the deployed auth flow work even when CORS_ORIGINS is unchanged.
+    FRONTEND_URL: str = ""
 
     # --- Rate limiting ---
     RATE_LIMIT_PER_MINUTE: int = 30
@@ -81,7 +84,11 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> List[str]:
-        return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
+        origins = [o.strip().rstrip("/") for o in self.CORS_ORIGINS.split(",") if o.strip()]
+        frontend_url = self.FRONTEND_URL.strip().rstrip("/")
+        if frontend_url and frontend_url not in origins:
+            origins.append(frontend_url)
+        return origins
 
     @property
     def is_production(self) -> bool:

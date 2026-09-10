@@ -418,7 +418,16 @@ with two services as described above:
 
 - Backend service root directory: `/backend` and Dockerfile: `Dockerfile`.
 - Frontend service root directory: `/frontend` and Dockerfile: `Dockerfile`.
-- Frontend build variable: `VITE_API_BASE_URL=https://<backend-public-domain>`.
+- Frontend variable: `VITE_API_BASE_URL=https://<backend-public-domain>`.
+- Backend variable: `FRONTEND_URL=https://<frontend-public-domain>`.
+- Backend variables: `ENV=production`, `DEBUG=false`, a unique `JWT_SECRET_KEY`, and the Railway Postgres `DATABASE_URL`.
+
+The frontend Docker image writes `VITE_API_BASE_URL` into a small runtime
+configuration file at container startup, so setting it as a Railway service
+variable works even when it is not supplied as a Docker build argument. This
+prevents sign-up and login requests from accidentally going to the static
+frontend host instead of the FastAPI service. `FRONTEND_URL` is added to the
+backend CORS allowlist so browser auth requests are accepted.
 
 If a single frontend service is created from the repository root, the root
 `Dockerfile` and `railway.json` provide an explicit static frontend build so

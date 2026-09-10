@@ -1,3 +1,6 @@
+interface Window {
+  __RAUZR_API_BASE_URL__?: string;
+}
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
