@@ -13,12 +13,20 @@ export default function Login() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!email.trim() || !email.includes("@")) {
+      setError("Enter a valid email address.");
+      return;
+    }
+    if (!password) {
+      setError("Enter your password.");
+      return;
+    }
     setSubmitting(true);
     try {
       await login(email, password);
       navigate("/");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not sign in.");
+      setError(err instanceof ApiError ? err.message : "Sign in failed unexpectedly. Please try again.");
     } finally {
       setSubmitting(false);
     }

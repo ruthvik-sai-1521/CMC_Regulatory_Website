@@ -15,12 +15,24 @@ export default function Register() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!fullName.trim()) {
+      setError("Enter your full name.");
+      return;
+    }
+    if (!email.trim() || !email.includes("@")) {
+      setError("Enter a valid email address.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Use a password with at least 8 characters.");
+      return;
+    }
     setSubmitting(true);
     try {
       await register(email, fullName, password, company || undefined);
       navigate("/");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not create account.");
+      setError(err instanceof ApiError ? err.message : "Account creation failed unexpectedly. Please try again.");
     } finally {
       setSubmitting(false);
     }

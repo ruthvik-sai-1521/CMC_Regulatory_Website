@@ -8,6 +8,8 @@ const TOKEN_KEY = "rauzr_token";
 const API_BASE =
   window.__RAUZR_API_BASE_URL__ ?? import.meta.env.VITE_API_BASE_URL ?? "";
 
+const isProductionBuild = import.meta.env.MODE === "production";
+
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
@@ -28,6 +30,14 @@ export class ApiError extends Error {
   }
 }
 
+function apiConfigurationError() {
+  return new ApiError(
+    "The application API is not configured. Set VITE_API_BASE_URL on the frontend deployment.",
+    0,
+    "API_NOT_CONFIGURED"
+  );
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
@@ -38,7 +48,20 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}/api${path}`, { ...options, headers });
+  if (isProductionBuild && !API_BASE.trim()) {
+    throw apiConfigurationError();
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE.replace(/\/$/, "")}/api${path}`, { ...options, headers });
+  } catch {
+    throw new ApiError(
+      "Unable to reach the Rauzr Technologies API. Check that the backend service is running and that its URL and CORS settings are configured.",
+      0,
+      "API_UNREACHABLE"
+    );
+  }
 
   if (res.status === 204) return undefined as T;
 

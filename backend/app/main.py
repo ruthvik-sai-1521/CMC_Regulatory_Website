@@ -109,9 +109,17 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    fields = []
+    for error in exc.errors():
+        location = ".".join(str(part) for part in error.get("loc", []) if part != "body")
+        message = error.get("msg", "Invalid value")
+        fields.append(f"{location}: {message}" if location else message)
+    detail = "Invalid request payload."
+    if fields:
+        detail = f"Invalid request payload: {'; '.join(fields)}"
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": "Invalid request payload.", "code": "VALIDATION_ERROR", "errors": exc.errors()},
+        content={"detail": detail, "code": "VALIDATION_ERROR", "errors": exc.errors()},
     )
 
 
